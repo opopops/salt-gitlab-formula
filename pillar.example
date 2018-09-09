@@ -1,0 +1,47 @@
+gitlab:
+  edition: 'ee'
+
+  server:
+    external_url: https://gitlab.domain.com
+
+    gitlab_rails:
+      backup_keep_time: 1296000
+      shared_path: /srv/gitlab/shared
+      builds_directory: /srv/gitlab/builds
+      uploads_directory: /srv/gitlab/uploads
+      artifacts_path: /srv/gitlab/shared/artifacts
+      pages_path: /srv/gitlab/pages
+      gravatar_enabled: True
+    
+    high_availability:
+      mountpoint: /srv/gitlab/
+
+    user:
+      home: /srv/gitlab/home
+
+    nginx:
+      redirect_http_to_https: True
+      ssl_certificate: /etc/gitlab/ssl/domain.com.crt
+      ssl_certificate_key: /etc/gitlab/ssl/domain.com.key
+
+    registry_external_url: https://gitlab.domain.com:5500/
+
+    registry_nginx:
+      ssl_certificate: /etc/gitlab/ssl/domain.com.crt
+      ssl_certificate_key: /etc/gitlab/ssl/domain.com.key
+
+
+  runner:
+    config:
+      name: runner01
+      url: https://gitlab.domain.com/
+      registration_token: 12345678abcd
+      executor: docker
+      docker:
+        image: 'alpine:latest'
+        privileged: True
+        disable_cache: False
+        volumes: 
+          - '/cache'
+          - '/var/cache/cache-ci:/cache-ci:rw'
+        shm_size: 2147483648

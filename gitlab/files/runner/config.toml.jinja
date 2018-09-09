@@ -1,0 +1,56 @@
+{%- from "gitlab/map.jinja" import gitlab with context -%}
+{%- set settings = gitlab.runner.config -%}
+
+{%- set token = salt['cmd.shell']("gitlab-runner list 2>&1 | grep -E '^" ~ settings.name ~ "[ ]+' | awk '{print $4}' | cut -d '=' -f2") -%}
+
+{%- if settings.get('metrics_server', False) %}
+metrics_server = "{{ settings.metrics_server }}"
+{%- endif %}
+concurrent = {{ settings.concurrent }}
+check_interval = {{ settings.check_interval }}
+log_level = "{{ settings.log_level }}"
+
+[[runners]]
+  name = "{{ settings.name }}"
+  url = "{{ settings.url }}"
+  token = "{{ token }}"
+  {%- if settings.get('environment', False) %}
+  environment = ["{{ settings.environment|join('", "') }}"]
+  {%- endif %}
+  executor = "{{ settings.executor }}"
+
+  {%- if settings.executor|lower == 'docker' %}
+  [runners.docker]
+    tls_verify = false
+    image = "{{ settings.docker.image }}"
+    {%- if settings.docker.get('dns', False) %}
+    dns = ["{{ settings.docker.dns|join('", "') }}"]
+    {%- endif %}
+    {%- if settings.docker.get('dns_search', False) %}
+    dns_search = ["{{ settings.docker.dns_search|join('", "') }}"]
+    {%- endif %}
+    {%- if settings.docker.get('privileged', False) %}
+    privileged = true
+    {%- else %}
+    privileged = false
+    {%- endif %}
+    {%- if settings.docker.get('disable_cache', False) %}
+    disable_cache = true
+    {%- else %}
+    disable_cache = false
+    {%- endif %}
+    {%- if settings.docker.get('volumes', False) %}
+    volumes = ["{{ settings.docker.volumes|join('", "') }}"]
+    {%- else %}
+    volumes = []
+    {%- endif %}
+    {%- if settings.docker.get('shm_size', False) %}
+    shm_size = {{ settings.docker.shm_size }}
+    {%- endif %}
+    {%- if settings.docker.get('sysctls', False) %}
+    [runners.docker.sysctls]
+      {%- for k, v in settings.docker.sysctls %}
+      "{{k}}" = "{{v}}"
+      {%- endfor %}
+    {%- endif %}
+  {%- endif %}

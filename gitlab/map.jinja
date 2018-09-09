@@ -1,0 +1,47 @@
+# -*- coding: utf-8 -*-
+# vim: ft=jinja
+
+{%- set os         = salt['grains.get']('os') %}
+{%- set osrelease  = salt['grains.get']('osrelease') %}
+{%- set oscodename = salt['grains.get']('oscodename') %}
+
+{## Start with defaults from defaults.yaml ##}
+{% import_yaml 'gitlab/defaults.yaml' as default_settings %}
+
+{% set edition = salt['pillar.get']('gitlab:edition', default_settings.gitlab.edition) %}
+
+{##
+Setup variables using grains['os_family'] based logic, only add key:values
+that differ from what is in defaults.yaml
+##}
+{% set os_family_map = salt['grains.filter_by']({
+    'Debian': {
+        'repo': {
+            'humanname': 'gitlab',
+            'name': 'deb https://packages.gitlab.com/gitlab/gitlab-' ~ edition ~ '/' ~ os|lower ~ ' ' ~ oscodename ~ ' main',
+            'file': '/etc/apt/sources.list.d/gitlab.list',
+            'keyserver': 'pgp.mit.edu',
+            'keyid': '1A4C919DB987D435939638B914219A96E15E78F4',
+        },
+        'server_pkg': 'gitlab-' ~ edition,
+        'server_config': '/etc/gitlab/gitlab.rb',
+        'server_secrets': '/etc/gitlab/gitlab-secrets.json',
+        'server_ssl_dir': '/etc/gitlab/ssl',
+        'runner_pkg': 'gitlab-runner',
+        'runner_config': '/etc/gitlab-runner/config.toml',
+        'runner_service': 'gitlab-runner'
+    },
+}
+, grain="os_family"
+, merge=salt['pillar.get']('gitlab:lookup')) %}
+
+{## Merge the flavor_map to the default settings ##}
+{% do default_settings.gitlab.update(os_family_map) %}
+
+{## Merge in gitlab:lookup pillar ##}
+{% set gitlab = salt['pillar.get'](
+        'gitlab',
+        default=default_settings.gitlab,
+        merge=True
+    )
+%}

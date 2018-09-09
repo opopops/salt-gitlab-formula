@@ -1,0 +1,561 @@
+{%- from "gitlab/map.jinja" import gitlab with context -%}
+{%- set settings = gitlab.server.config -%}
+
+{#- Render data as Ruby On Rail -#}
+{%- macro to_rb(data, indent=0) -%}
+  {%- if data is mapping -%}
+{
+    {%- for k, v in data|dictsort %}
+  "{{k}}" => {% if v is not string -%} {{to_rb(v)|indent(indent|int + 2)}} {%- else -%} "{{v}}" {%- endif %} {%- if not loop.last -%},{%- endif -%}
+    {%- endfor %}
+}
+  {%- elif data|is_list -%}
+[
+    {%- for v in data %}
+      {%- if v is not string -%} {{to_rb(v)|indent(indent|int + 2)}} {%- else -%} "{{v}}" {%- endif %}{%- if not loop.last -%},{%- endif -%}
+    {%- endfor -%}
+]
+  {%- elif data|lower in ['true', 'false'] -%}
+{{data|lower}}
+  {%- elif data is number -%}
+{{data}}
+  {%- else -%}
+"{{data}}"
+  {%- endif -%}
+{%- endmacro -%}
+
+## THIS CONFIGURATION IS MANAGED BY SALT
+
+## Url on which GitLab will be reachable.
+external_url '{{ settings.external_url }}'
+{%- if settings.get('external_port', False) %}
+external_port '{{ settings.external_port }}'
+{%- endif %}
+
+{%- if settings.get('roles', False) %}
+## Roles for multi-instance GitLab
+roles ['{{ settings.roles|join("','") }}']
+{%- endif %}
+
+{%- if settings.get('git_data_dirs', False) %}
+### For setting up different data storing directory
+git_data_dirs({{ settings.get('git_data_dirs')|json }})
+{%- endif %}
+
+
+{%- if settings.get('gitlab_rails', False) %}
+
+############################
+# gitlab.yml configuration #
+############################
+
+  {%- for k, v in settings.get('gitlab_rails')|dictsort %}
+gitlab_rails['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('user', False) %}
+
+###############
+# GitLab user #
+###############
+
+## Modify default git user.
+  {%- for k, v in settings.get('user')|dictsort %}
+user['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('unicorn', False) %}
+
+##################
+# GitLab Unicorn #
+##################
+
+## Tweak unicorn settings.
+  {%- for k, v in settings.get('unicorn')|dictsort %}
+unicorn['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('sidekiq', False) %}
+
+##################
+# GitLab Sidekiq #
+##################
+
+  {%- for k, v in settings.get('sidekiq')|dictsort %}
+sidekiq['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('sidekiq_cluster', False) %}
+
+##########################
+# GitLab Sidekiq Cluster #
+##########################
+
+  {%- for k, v in settings.get('sidekiq_cluster')|dictsort %}
+sidekiq_cluster['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitlab_shell', False) %}
+
+################
+# gitlab-shell #
+################
+
+  {%- for k, v in settings.get('gitlab_shell')|dictsort %}
+gitlab_shell['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('postgresql', False) %}
+
+#####################
+# GitLab PostgreSQL #
+#####################
+
+  {%- for k, v in settings.get('postgresql')|dictsort %}
+postgresql['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('redis', False) %}
+
+################
+# GitLab Redis #
+################
+
+  {%- for k, v in settings.get('redis')|dictsort %}
+redis['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('redis_master_role', False) %}
+
+#######################
+# Gitlab Redis Master #
+#######################
+
+  {%- for k, v in settings.get('redis_master_role')|dictsort %}
+redis_master_role['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('redis_slave_role', False) %}
+
+#######################
+# Gitlab Redis Slave #
+#######################
+
+  {%- for k, v in settings.get('redis_slave_role')|dictsort %}
+redis_slave_role['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('web_server', False) %}
+
+#####################
+# GitLab Web server #
+#####################
+
+  {%- for k, v in settings.get('web_server')|dictsort %}
+web_server['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitlab_git_http_server', False) %}
+
+##########################
+# GitLab Git HTTP server #
+##########################
+
+  {%- for k, v in settings.get('gitlab_git_http_server')|dictsort %}
+gitlab_git_http_server['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('nginx', False) %}
+
+################
+# GitLab Nginx #
+################
+
+  {%- for k, v in settings.get('nginx')|dictsort %}
+nginx['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitlab_workhorse', False) %}
+
+####################
+# GitLab Workhorse #
+####################
+
+  {%- for k, v in settings.get('gitlab_workhorse')|dictsort %}
+gitlab_workhorse['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('letsencrypt', False) %}
+
+######################
+# GitLab Letsencrypt #
+######################
+
+  {%- for k, v in settings.get('letsencrypt')|dictsort %}
+letsencrypt['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('logging', False) %}
+
+##################
+# GitLab Logging #
+##################
+
+  {%- for k, v in settings.get('logging')|dictsort %}
+logging['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('logrotate', False) %}
+
+#############
+# Logrotate #
+#############
+
+  {%- for k, v in settings.get('logrotate')|dictsort %}
+logrotate['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('manage_storage_directories', False) %}
+
+#######################
+# Storage directories #
+#######################
+
+  {%- for k, v in settings.get('manage_storage_directories')|dictsort %}
+manage_storage_directories['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('omnibus_gitconfig', False) %}
+
+#######
+# Git #
+#######
+
+  {%- for k, v in settings.get('omnibus_gitconfig')|dictsort %}
+omnibus_gitconfig['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('registry', False) %}
+
+############################
+# registry configuration   #
+############################
+
+  {%- for k, v in settings.get('registry')|dictsort %}
+registry['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitlab_ci', False) %}
+
+#################################
+# application.yml configuration #
+#################################
+
+  {%- for k, v in settings.get('gitlab_ci')|dictsort %}
+gitlab_ci['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('ci_unicorn', False) %}
+
+#####################
+# GitLab CI Unicorn #
+#####################
+
+  {%- for k, v in settings.get('ci_unicorn')|dictsort %}
+ci_unicorn['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('ci_redis', False) %}
+
+###################
+# GitLab CI Redis #
+###################
+
+  {%- for k, v in settings.get('ci_redis')|dictsort %}
+ci_redis['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('prometheus', False) %}
+
+##############
+# Prometheus #
+##############
+
+  {%- for k, v in settings.get('prometheus')|dictsort %}
+prometheus['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('node_exporter', False) %}
+
+############################
+# Prometheus Node Exporter #
+############################
+
+  {%- for k, v in settings.get('node_exporter')|dictsort %}
+node_exporter['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('redis_exporter', False) %}
+
+################################################################################
+## Prometheus Redis exporter
+
+  {%- for k, v in settings.get('redis_exporter')|dictsort %}
+redis_exporter['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('postgres_exporter', False) %}
+
+################################################################################
+## Postgres exporter
+
+  {%- for k, v in settings.get('postgres_exporter')|dictsort %}
+postgres_exporter['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitlab_monitor', False) %}
+
+################################################################################
+## Gitlab monitor
+
+  {%- for k, v in settings.get('gitlab_monitor')|dictsort %}
+gitlab_monitor['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('high_availability', False) %}
+
+#####################
+# High Availability #
+#####################
+
+  {%- for k, v in settings.get('high_availability')|dictsort %}
+high_availability['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('mattermost_external_url', False) %}
+
+#############################################
+# Url on which Mattermost will be reachable #
+#############################################
+mattermost_external_url '{{ settings.mattermost_external_url }}'
+{%- endif %}
+
+
+{%- if settings.get('mattermost', False) %}
+
+#####################
+# GitLab Mattermost #
+#####################
+
+  {%- for k, v in settings.get('mattermost')|dictsort %}
+mattermost['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('mattermost_nginx', False) %}
+
+#####################
+# Mattermost NGINX  #
+#####################
+
+  {%- for k, v in settings.get('mattermost_nginx')|dictsort %}
+mattermost_nginx['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('pages_external_url', False) %}
+
+####################
+# GitLab Pages
+####################
+
+## Define to enable GitLab Pages
+pages_external_url '{{ settings.pages_external_url }}'
+{%- endif %}
+
+{%- if settings.get('gitlab_pages', False) %}
+  {%- for k, v in settings.get('gitlab_pages')|dictsort %}
+gitlab_pages['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('pages_nginx', False) %}
+
+######################
+# GitLab Pages NGINX #
+######################
+
+  {%- for k, v in settings.get('pages_nginx')|dictsort %}
+pages_nginx['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('registry_external_url', False) %}
+
+############
+# Registry #
+############
+registry_external_url '{{ settings.registry_external_url }}'
+{%- endif %}
+
+
+{%- if settings.get('registry_nginx', False) %}
+
+##################
+# Registry NGINX #
+##################
+
+  {%- for k, v in settings.get('registry_nginx')|dictsort %}
+registry_nginx['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('manage_accounts', False) %}
+
+###################
+# Manage Accounts #
+###################
+
+  {%- for k, v in settings.get('manage_accounts')|dictsort %}
+manage_accounts['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('redis_sentinel_role', False) %}
+
+##################
+# Redis Sentinel #
+##################
+
+  {%- for k, v in settings.get('redis_sentinel_role')|dictsort %}
+redis_sentinel_role['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('sentinel', False) %}
+
+###################
+# GitLab Sentinel #
+###################
+
+  {%- for k, v in settings.get('sentinel')|dictsort %}
+sentinel['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('gitaly', False) %}
+
+##########
+# Gitaly #
+##########
+
+  {%- for k, v in settings.get('gitaly')|dictsort %}
+gitaly['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('geo_primary', False) %}
+
+#####################
+# Gitlab Geo Primary#
+#####################
+
+geo_primary_role['enable'] =  true
+
+  {%- for k, v in settings.get('geo_primary')|dictsort %}
+geo_primary['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('geo_secondary', False) %}
+
+#######################
+# Gitlab Geo Secondary#
+#######################
+
+geo_secondary_role['enable'] =  true
+
+  {%- for k, v in settings.get('geo_secondary')|dictsort %}
+geo_secondary['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}
+
+
+{%- if settings.get('geo_postgresql', False) %}
+
+########################
+# Gitlab Geo Postgresql#
+########################
+
+  {%- for k, v in settings.get('geo_postgresql')|dictsort %}
+geo_postgresql['{{k}}'] = {{ to_rb(v) }}
+  {%- endfor %}
+{%- endif %}

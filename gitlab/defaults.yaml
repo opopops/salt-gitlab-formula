@@ -1,0 +1,13 @@
+# -*- coding: utf-8 -*-
+# vim: ft=yaml
+gitlab:
+  edition: ce
+  manage_repo: True
+
+  server:
+    config:
+      external_url: http://{{ salt['grains.get']('fqdn') }}
+
+  runner:
+    config:
+      log_level: warning
