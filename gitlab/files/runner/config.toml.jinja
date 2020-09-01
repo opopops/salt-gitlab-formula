@@ -23,6 +23,18 @@ log_level = "{{ settings.log_level }}"
   [runners.docker]
     tls_verify = false
     image = "{{ settings.docker.image }}"
+    {%- if settings.docker.get('host', False) %}
+    host = "{{ settings.docker.host }}"
+    {%- endif %}
+    {%- if settings.docker.get('cpuset_cpus', False) %}
+    cpuset_cpus = "{{ settings.docker.cpuset_cpus }}"
+    {%- endif %}
+    {%- if settings.docker.get('cpus', False) %}
+    cpus = "{{ settings.docker.cpus }}"
+    {%- endif %}
+    {%- if settings.docker.get('memory', False) %}
+    memory = "{{ settings.docker.memory }}"
+    {%- endif %}
     {%- if settings.docker.get('dns', False) %}
     dns = ["{{ settings.docker.dns|join('", "') }}"]
     {%- endif %}

@@ -275,9 +275,9 @@ omnibus_gitconfig['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('registry', False) %}
 
-############################
-# registry configuration   #
-############################
+##########################
+# registry configuration #
+##########################
 
   {%- for k, v in settings.get('registry')|dictsort %}
 registry['{{k}}'] = {{ to_rb(v) }}
@@ -347,8 +347,9 @@ node_exporter['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('redis_exporter', False) %}
 
-################################################################################
-## Prometheus Redis exporter
+##############################
+## Prometheus Redis exporter #
+##############################
 
   {%- for k, v in settings.get('redis_exporter')|dictsort %}
 redis_exporter['{{k}}'] = {{ to_rb(v) }}
@@ -358,8 +359,9 @@ redis_exporter['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('postgres_exporter', False) %}
 
-################################################################################
-## Postgres exporter
+######################
+## Postgres exporter #
+######################
 
   {%- for k, v in settings.get('postgres_exporter')|dictsort %}
 postgres_exporter['{{k}}'] = {{ to_rb(v) }}
@@ -369,8 +371,9 @@ postgres_exporter['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('gitlab_monitor', False) %}
 
-################################################################################
-## Gitlab monitor
+###################
+## Gitlab monitor #
+###################
 
   {%- for k, v in settings.get('gitlab_monitor')|dictsort %}
 gitlab_monitor['{{k}}'] = {{ to_rb(v) }}
@@ -425,9 +428,9 @@ mattermost_nginx['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('pages_external_url', False) %}
 
-####################
-# GitLab Pages
-####################
+################
+# GitLab Pages #
+################
 
 ## Define to enable GitLab Pages
 pages_external_url '{{ settings.pages_external_url }}'
@@ -523,9 +526,9 @@ gitaly['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('geo_primary', False) %}
 
-#####################
-# Gitlab Geo Primary#
-#####################
+######################
+# Gitlab Geo Primary #
+######################
 
 geo_primary_role['enable'] =  true
 
@@ -537,9 +540,9 @@ geo_primary['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('geo_secondary', False) %}
 
-#######################
-# Gitlab Geo Secondary#
-#######################
+########################
+# Gitlab Geo Secondary #
+########################
 
 geo_secondary_role['enable'] =  true
 
@@ -551,9 +554,9 @@ geo_secondary['{{k}}'] = {{ to_rb(v) }}
 
 {%- if settings.get('geo_postgresql', False) %}
 
-########################
-# Gitlab Geo Postgresql#
-########################
+#########################
+# Gitlab Geo Postgresql #
+#########################
 
   {%- for k, v in settings.get('geo_postgresql')|dictsort %}
 geo_postgresql['{{k}}'] = {{ to_rb(v) }}
